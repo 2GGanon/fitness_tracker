@@ -103,19 +103,20 @@ button.secondary{background:#888}
 @media (max-width:480px){
   body{padding:12px}
   main{max-width:100%;padding:0}
-  /* keep setup and calendar on one row */
-  #topRow{display:flex;flex-wrap:nowrap;align-items:center;gap:8px}
-  #topRow #setup{display:flex;flex-direction:row;align-items:center;gap:6px;min-width:0;padding:6px}
+  /* layout: keep setup and calendar on the first row, session editor flows to a full-width second row */
+  #topRow{display:flex;flex-wrap:wrap;align-items:flex-start;gap:8px}
+  #topRow #setup{display:flex;flex-direction:row;align-items:center;gap:6px;min-width:0;padding:6px;order:1}
   #topRow #setup > button{width:auto;text-align:center;padding:6px 8px;font-size:0.85rem}
-  /* reduce history width so it can sit next to setup */
+  /* place history to the right of setup on the first row */
   #topRow #history{flex:0 0 auto;min-width:0;order:2;margin-left:auto}
-  /* collapse session editor content on small screens to save horizontal space */
-  #topRow #sessionEditor{flex:0 0 auto;order:3}
-  #sessionEditorContent{display:none}
+  #topRow #history > .calendar-controls{align-self:flex-end}
+  /* session editor becomes a full-width block below (second row) */
+  #topRow #sessionEditor{flex:0 0 100%;order:3;align-self:stretch;margin-top:6px}
+  #sessionEditorContent{display:block}
   #sessionEditor h2{font-size:1rem}
   /* tighten calendar day sizing */
-  .calendar-grid .day{min-height:32px;padding:3px 2px;font-size:0.78rem}
-  .calendar-grid .day .date-num{font-size:0.8rem}
+  .calendar-grid .day{min-height:24px;padding:3px 2px;font-size:0.72rem}
+  .calendar-grid .day .date-num{font-size:0.75rem}
   /* reduce modal width */
   .modal{min-width:260px}
   /* nutrition inputs shrink */
