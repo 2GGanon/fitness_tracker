@@ -10,15 +10,23 @@ main{max-width:900px;margin:0 auto}
 h1{margin:0 0 12px}
 section{background:var(--card);padding:12px;border-radius:8px;margin:12px 0}
 .hidden{display:none}
-#/* Main buttons bar: compact layout for add/start/toggle */
-#mainButtonsBar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px}
-#topRow{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
-/* styling for main buttons bar (default stacked for wide layouts) */
-#mainButtonsBar{display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:160px;padding:8px}
-#mainButtonsBar > button{width:100%;text-align:left}
-/* center column: session editor sits between setup and calendar */
-#topRow #sessionEditor{flex:1 1 360px;max-width:520px;align-self:flex-start}
-#topRow #history{flex:0 0 auto;min-width:220px}
+/* Main buttons bar: compact layout for add/start/toggle */
+#mainButtonsBar{display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:6px;margin:8px 0}
+#mainButtonsBar > button{padding:6px 8px;border-radius:4px;background:var(--accent);color:#fff;border:0;cursor:pointer;min-width:72px;height:34px;display:inline-flex;align-items:center;justify-content:center;font-size:0.92rem}
+#topRow{display:grid;grid-template-columns:auto 220px;grid-template-rows:auto 1fr;gap:6px;align-items:start}
+/* left column: header + main buttons; right column: calendar */
+#leftControls{grid-column:1 / 2;display:flex;flex-direction:column;align-items:flex-start}
+/* DEBUG: visible outline to verify CSS is loaded; remove after verification */
+/* shrink outline to fit content closely */
+#leftControls{outline:2px dashed rgba(255,0,0,0.35);padding-right:2px;width:max-content}
+#history{grid-column:2 / 3;grid-row:1 / 2;align-self:start}
+#sessionEditor{grid-column:1 / -1;align-self:start}
+/* ensure main buttons stack vertically in left column and align left under the header */
+#mainButtonsBar{display:flex;flex-direction:column;gap:8px;min-width:140px;padding:8px;padding-left:0;margin-left:0;align-items:flex-start}
+/* main buttons: content-sized width, modest uniform height */
+#mainButtonsBar button{height:34px;min-width:72px;width:auto}
+#mainButtonsBar .btn-stack{display:flex;flex-direction:column;gap:8px}
+#mainButtonsBar .btn-stack > button{width:auto}
 #mainButtonsBar input{padding:6px;flex:0 1 260px;min-width:140px;margin-right:0}
 #mainButtonsBar > button{padding:6px 8px !important;margin-left:0}
 button{background:var(--accent);color:#fff;border:0;padding:8px 10px;border-radius:6px;cursor:pointer}
@@ -68,16 +76,18 @@ button.secondary{background:#888}
 .nutrition-item{padding:6px;border-bottom:1px dashed #eee}
 
 /* Layout: compact the calendar container and right-align it */
-#history{display:flex;flex-direction:column;gap:8px;align-items:flex-end;min-width:220px}
-/* align the month controls to the right edge of the history block */
-#history > .calendar-controls{align-self:flex-end}
-/* ensure controls inside history align right */
-#history .calendar-controls{justify-content:flex-end;width:100%}
+/* DEBUG: outline to verify calendar positioning */
+/* align calendar content to the left so it sits close to the left controls */
+#history{display:flex;flex-direction:column;gap:8px;align-items:flex-start;min-width:140px;max-width:200px;padding-right:0;margin-right:0;outline:2px dashed rgba(0,128,0,0.25)}
+/* align the month controls to the left edge of the history block */
+#history > .calendar-controls{align-self:flex-start}
+/* ensure controls inside history align left */
+#history .calendar-controls{justify-content:flex-start;width:100%}
 /* let the calendar container size to its content instead of stretching */
 #calendarGrid{flex:0 0 auto;max-width:none}
 .calendar-grid{display:inline-grid}
 /* keep day summary compact and to the left of the calendar when space allows */
-.day-summary{flex:0 0 auto;min-width:200px;margin-top:0;text-align:left}
+.day-summary{flex:0 0 auto;max-width:140px;width:100%;box-sizing:border-box;margin-top:0;text-align:left}
 
 /* Add exercise compact input */
 #addExerciseWrapper{display:none}
@@ -115,8 +125,8 @@ button.secondary{background:#888}
   #sessionEditorContent{display:block}
   #sessionEditor h2{font-size:1rem}
   /* tighten calendar day sizing */
-  .calendar-grid .day{min-height:24px;padding:3px 2px;font-size:0.72rem}
-  .calendar-grid .day .date-num{font-size:0.75rem}
+  .calendar-grid .day{min-height:20px;padding:2px 1px;font-size:0.68rem}
+  .calendar-grid .day .date-num{font-size:0.72rem}
   /* reduce modal width */
   .modal{min-width:260px}
   /* nutrition inputs shrink */
@@ -139,6 +149,13 @@ button.secondary{background:#888}
   .calendar-grid .day.header{display:none}
   .calendar-grid{gap:0}
   .calendar-grid .day{border-width:0.5px}
+
+  /* define compact calendar cell size and make day-summary match calendar width */
+  :root{--cal-cell:20px}
+  .calendar-grid{grid-template-columns:repeat(7,var(--cal-cell))}
+  .calendar-grid .day{min-height:var(--cal-cell);padding:1px 0.5px}
+  #history{align-items:flex-start}
+  .day-summary{width:160px;box-sizing:border-box}
 }
 
 @media (max-width:360px){

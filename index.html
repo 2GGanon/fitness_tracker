@@ -6,24 +6,35 @@
   <title>Fitness Tracker</title>
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#2b6cff">
-  <link rel="stylesheet" href="styles.css?v=2026-09-12-1">
+  <link rel="stylesheet" href="styles.css?v=2026-09-13-1">
 </head>
 <body>
   <main>
-    <h1>Fitness Tracker</h1>
-    <div id="mainButtonsBar">
-      <button id="addExerciseBtn" type="button">Add Exercise</button>
-      <button id="newSessionBtn" type="button">Start New Session</button>
-      <button id="toggleExercisesBtn" type="button">Exercises &amp; PBs</button>
-    <button id="toggleDietBtn" type="button">Diet</button>
-    <button id="toggleCalendarBtn" type="button">📅 Calendar</button>
-      <button id="exportDataBtn" type="button">Export Data</button>
-      <label for="importDataInput" class="hidden" id="importDataLabel">Import</label>
-      <input id="importDataInput" type="file" accept="application/json" class="hidden" />
-      <button id="importDataBtn" type="button">Import Data</button>
-    </div>
-
     <div id="topRow">
+      <div id="leftControls">
+        <h1>Fitness Tracker</h1>
+        <div id="mainButtonsBar">
+          <div class="btn-stack">
+            <button id="addExerciseBtn" type="button">Add Exercise</button>
+            <button id="newSessionBtn" type="button">Start Session</button>
+          </div>
+          <div class="btn-stack">
+            <button id="toggleExercisesBtn" type="button">Exercises &amp; PBs</button>
+            <button id="toggleDietBtn" type="button">Diet</button>
+          </div>
+        </div>
+      </div>
+
+      
+      <section id="history">
+        <div class="calendar-controls">
+          <select id="monthSelect" aria-label="Select month"></select>
+          <select id="yearSelect" aria-label="Select year"></select>
+        </div>
+        <div id="calendarGrid" class="calendar-grid"></div>
+        <div id="daySummary" class="day-summary"></div>
+      </section>
+
       <section id="sessionEditor" class="hidden">
         <h2>Current Session — <span id="sessionDate"></span></h2>
         <div id="sessionEditorContent" class="compact-session">
@@ -63,14 +74,7 @@
         </div>
       </section>
 
-      <section id="history">
-        <div class="calendar-controls">
-          <select id="monthSelect" aria-label="Select month"></select>
-          <select id="yearSelect" aria-label="Select year"></select>
-        </div>
-        <div id="calendarGrid" class="calendar-grid"></div>
-        <div id="daySummary" class="day-summary"></div>
-      </section>
+      
     </div>
 
       <!-- Exercises will render in the center session area (exList) -->
@@ -90,6 +94,6 @@
       </div>
     </div>
   </div>
-  <script src="app.js"></script>
+  <script src="app.js?v=2026-09-13-1"></script>
 </body>
 </html>

@@ -653,7 +653,7 @@ function showDaySummary(dateKey, cell){
     entry.className = 'entry'
     const header = document.createElement('button')
     header.className = 'toggle-session'
-    header.textContent = `Session ${idx+1} — ${new Date(s.date).toLocaleTimeString()}`
+    header.textContent = `Session ${idx+1}`
     header.onclick = ()=>{
       // show this session in center session area
       showCenterSessionSummary(s)
@@ -702,6 +702,9 @@ function showCenterNutritionSummary(dateKey){
   summary.classList.remove('hidden')
   state.centerView = {type:'nutritionSummary', dateKey}
   updateNewSessionButton()
+  // make main buttons uniform width based on the Exercises & PBs button
+  try{ equalizeMainButtonSizes() }catch(e){}
+  window.addEventListener('resize', ()=>{ try{ equalizeMainButtonSizes() }catch(e){} })
 }
 
 function showCenterSessionSummary(session){
@@ -715,7 +718,7 @@ function showCenterSessionSummary(session){
   // populate summary
   summary.innerHTML = ''
   const title = document.createElement('h4')
-  title.textContent = new Date(session.date).toLocaleTimeString()
+  title.textContent = new Date(session.date).toLocaleDateString()
   summary.appendChild(title)
   Object.keys(session.entries||{}).forEach(ex=>{
     const sets = session.entries[ex].map(st=>`${st.weight}${st.unit}×${st.reps}`).join(', ')
@@ -762,9 +765,37 @@ function updateNewSessionButton(){
   if(state.currentSession){
     btn.textContent = state.centerView && state.centerView.type==='summary' ? 'Resume Session' : 'Resume Session'
   } else {
-    btn.textContent = 'Start New Session'
+    btn.textContent = 'Start Session'
   }
 }
+
+// Set all main buttons to the width of the Exercises & PBs button so they match
+function equalizeMainButtonSizes(){
+  const ref = document.getElementById('toggleExercisesBtn')
+  const bar = document.getElementById('mainButtonsBar')
+  if(!ref || !bar) return
+  const buttons = Array.from(bar.querySelectorAll('button'))
+  // clear any previous inline widths so we can measure natural size
+  buttons.forEach(b=> b.style.width = '')
+
+  // helper to measure and apply width; retry a couple times if measurement is 0
+  function measureAndApply(attempt){
+    const rect = ref.getBoundingClientRect()
+    const w = Math.round(rect.width || 0)
+    if(w <= 0 && attempt < 5){
+      // schedule another attempt after a short delay
+      setTimeout(()=> measureAndApply(attempt+1), 50)
+      return
+    }
+    const finalW = Math.max(w, 72)
+    buttons.forEach(b=> { b.style.width = finalW + 'px' })
+  }
+  // try on next frame to allow layout to stabilise
+  requestAnimationFrame(()=> measureAndApply(0))
+}
+
+// also ensure sizing after full load (fonts/resources)
+window.addEventListener('load', ()=>{ try{ equalizeMainButtonSizes() }catch(e){} })
 
 function updateSelectedPB(name){
   const pbs = computeAllPBs()
@@ -888,6 +919,7 @@ function confirmAddExercise(){
 }
 
 function init(){
+  try{ console.log('app.js init') }catch(e){}
   document.getElementById('addExerciseBtn').onclick = ()=> showAddExerciseInput()
   const confirmBtn = document.getElementById('modalConfirmAddExerciseBtn')
   const cancelBtn = document.getElementById('modalCancelAddExerciseBtn')
@@ -904,15 +936,11 @@ function init(){
   if(toggleDietBtn) toggleDietBtn.addEventListener('click', toggleDiet)
   const nutritionRecordBtn = document.getElementById('nutritionRecordBtn')
   if(nutritionRecordBtn) nutritionRecordBtn.addEventListener('click', recordNutrition)
-  // export/import backup buttons
-  const exportBtn = document.getElementById('exportDataBtn')
-  if(exportBtn) exportBtn.addEventListener('click', exportData)
-  const importBtn = document.getElementById('importDataBtn')
-  const importInput = document.getElementById('importDataInput')
-  if(importBtn) importBtn.addEventListener('click', ()=> importInput && importInput.click())
-  if(importInput) importInput.addEventListener('change', handleImportFile)
+  // (export/import removed)
   const toggleCalendarBtn = document.getElementById('toggleCalendarBtn')
   if(toggleCalendarBtn) toggleCalendarBtn.addEventListener('click', toggleCalendar)
+  // ensure function is available to inline onclick as well
+  window.toggleCalendar = toggleCalendar
   updateExercisesVisibility()
   // auto-finish diet view if the active date has passed
   const todayKey = (new Date()).toISOString().split('T')[0]
@@ -938,11 +966,22 @@ function init(){
 }
 
 function toggleCalendar(){
-  state.data.settings = state.data.settings || {}
-  // default to visible true if not set
-  state.data.settings.showCalendar = !((state.data.settings.showCalendar === undefined) ? true : state.data.settings.showCalendar)
-  saveData(state.data)
-  updateCalendarVisibility()
+  try{
+    console.log('toggleCalendar invoked. current settings:', state.data.settings)
+    // immediate DOM toggle for responsiveness
+    const historyEl = document.getElementById('history')
+    if(historyEl){
+      historyEl.classList.toggle('hidden')
+    }
+    // compute visible state from DOM so we reflect reality
+    const visible = historyEl ? !historyEl.classList.contains('hidden') : false
+    state.data.settings = state.data.settings || {}
+    state.data.settings.showCalendar = visible
+    console.log('toggleCalendar new showCalendar=', state.data.settings.showCalendar)
+    saveData(state.data)
+    // sync UI attributes/labels
+    updateCalendarVisibility()
+  }catch(e){ console.error('toggleCalendar error', e) }
 }
 
 function updateCalendarVisibility(){
@@ -954,44 +993,13 @@ function updateCalendarVisibility(){
     else history.classList.add('hidden')
   }
   if(btn) btn.setAttribute('aria-pressed', visible ? 'true' : 'false')
-}
-
-// Export current state.data as JSON file for backup
-function exportData(){
-  try{
-    const data = state.data || {exercises:[], sessions:[], settings:{}}
-    const json = JSON.stringify(data, null, 2)
-    const blob = new Blob([json], {type: 'application/json'})
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    const stamp = new Date().toISOString().split('T')[0]
-    a.download = `fitness_tracker_backup_${stamp}.json`
-    document.body.appendChild(a); a.click(); a.remove()
-    URL.revokeObjectURL(url)
-  }catch(e){ alert('Export failed: '+e.message) }
-}
-
-function handleImportFile(e){
-  const f = e.target.files && e.target.files[0]
-  if(!f) return
-  const reader = new FileReader()
-  reader.onload = ()=>{
+  if(btn) {
     try{
-      const parsed = JSON.parse(reader.result)
-      if(!parsed || typeof parsed !== 'object') return alert('Invalid backup file')
-      if(!confirm('Importing will replace your current local data. Continue?')) return
-      state.data = parsed
-      saveData(state.data)
-      // reload UI to reflect imported data
-      ensureExerciseObjects()
-      renderExercises(); renderCalendar(); renderSessionEditor(); updateNewSessionButton()
-      alert('Import successful')
-    }catch(err){ alert('Import failed: '+err.message) }
+      // icon-only button; keep title/aria for accessibility
+      btn.textContent = '📅'
+    }catch(e){/* ignore */}
   }
-  reader.readAsText(f)
-  // clear input so the same file can be re-imported later if needed
-  e.target.value = null
+  console.log('updateCalendarVisibility:', visible)
 }
 
 function registerServiceWorker(){

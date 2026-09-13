@@ -1,9 +1,9 @@
-const CACHE_NAME = 'fitness-tracker-v2'
+const CACHE_NAME = 'fitness-tracker-v3'
 const ASSETS = [
   './',
   './index.html',
-  './styles.css',
-  './app.js',
+  './styles.css?v=2026-09-13-1',
+  './app.js?v=2026-09-13-1',
   './manifest.webmanifest'
 ]
 
