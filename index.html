@@ -11,19 +11,18 @@
 <body>
   <main>
     <h1>Fitness Tracker</h1>
+    <div id="mainButtonsBar">
+      <button id="addExerciseBtn" type="button">Add Exercise</button>
+      <button id="newSessionBtn" type="button">Start New Session</button>
+      <button id="toggleExercisesBtn" type="button">Exercises &amp; PBs</button>
+      <button id="toggleDietBtn" type="button">Diet</button>
+      <button id="exportDataBtn" type="button">Export Data</button>
+      <label for="importDataInput" class="hidden" id="importDataLabel">Import</label>
+      <input id="importDataInput" type="file" accept="application/json" class="hidden" />
+      <button id="importDataBtn" type="button">Import Data</button>
+    </div>
 
     <div id="topRow">
-      <section id="setup">
-        <button id="addExerciseBtn" type="button">Add Exercise</button>
-        <button id="newSessionBtn" type="button">Start New Session</button>
-        <button id="toggleExercisesBtn" type="button">Exercises &amp; PBs</button>
-        <button id="toggleDietBtn" type="button">Diet</button>
-        <button id="exportDataBtn" type="button">Export Data</button>
-        <label for="importDataInput" class="hidden" id="importDataLabel">Import</label>
-        <input id="importDataInput" type="file" accept="application/json" class="hidden" />
-        <button id="importDataBtn" type="button">Import Data</button>
-      </section>
-
       <section id="sessionEditor" class="hidden">
         <h2>Current Session — <span id="sessionDate"></span></h2>
         <div id="sessionEditorContent" class="compact-session">

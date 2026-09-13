@@ -10,17 +10,17 @@ main{max-width:900px;margin:0 auto}
 h1{margin:0 0 12px}
 section{background:var(--card);padding:12px;border-radius:8px;margin:12px 0}
 .hidden{display:none}
-/* Setup bar: compact layout for add/start/toggle */
-#setup{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px}
+#/* Main buttons bar: compact layout for add/start/toggle */
+#mainButtonsBar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px}
 #topRow{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
-/* when in the topRow, stack setup controls vertically and left-align buttons */
-#topRow #setup{display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:160px;padding:8px}
-#topRow #setup > button{width:100%;text-align:left}
+/* styling for main buttons bar (default stacked for wide layouts) */
+#mainButtonsBar{display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:160px;padding:8px}
+#mainButtonsBar > button{width:100%;text-align:left}
 /* center column: session editor sits between setup and calendar */
 #topRow #sessionEditor{flex:1 1 360px;max-width:520px;align-self:flex-start}
 #topRow #history{flex:0 0 auto;min-width:220px}
-#setup input{padding:6px;flex:0 1 260px;min-width:140px;margin-right:0}
-#setup > button{padding:6px 8px !important;margin-left:0}
+#mainButtonsBar input{padding:6px;flex:0 1 260px;min-width:140px;margin-right:0}
+#mainButtonsBar > button{padding:6px 8px !important;margin-left:0}
 button{background:var(--accent);color:#fff;border:0;padding:8px 10px;border-radius:6px;cursor:pointer}
 button.secondary{background:#888}
 .toggle-small{padding:6px 8px;font-size:0.9rem}
@@ -105,8 +105,8 @@ button.secondary{background:#888}
   main{max-width:100%;padding:0}
   /* layout: keep setup and calendar on the first row, session editor flows to a full-width second row */
   #topRow{display:flex;flex-wrap:wrap;align-items:flex-start;gap:8px}
-  #topRow #setup{display:flex;flex-direction:row;align-items:center;gap:6px;min-width:0;padding:6px;order:1}
-  #topRow #setup > button{width:auto;text-align:center;padding:6px 8px;font-size:0.85rem}
+  #mainButtonsBar{display:flex;flex-direction:row;align-items:center;gap:6px;min-width:0;padding:6px;order:1}
+  #mainButtonsBar > button{width:auto;text-align:center;padding:6px 8px;font-size:0.85rem}
   /* place history to the right of setup on the first row */
   #topRow #history{flex:0 0 auto;min-width:0;order:2;margin-left:auto}
   #topRow #history > .calendar-controls{align-self:flex-end}
@@ -127,7 +127,7 @@ button.secondary{background:#888}
 /* Strong override for small-to-medium phones: ensure session editor becomes full-width below the top controls */
 @media (max-width:600px){
   #topRow{display:flex;flex-wrap:wrap;align-items:flex-start;gap:8px}
-  #topRow #setup{order:1;flex:0 1 auto;min-width:0}
+  #mainButtonsBar{order:1;flex:0 1 auto;min-width:0}
   #topRow #history{order:2;flex:0 1 auto;min-width:0;margin-left:auto}
   /* make the history block narrower to give more room to setup buttons */
   #topRow #history{flex-basis:110px;max-width:120px}
