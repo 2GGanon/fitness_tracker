@@ -43,9 +43,9 @@ button.secondary{background:#888}
 /* Calendar styles (compact) */
 #calendarMonthLabel{font-weight:700;font-size:0.95rem}
 .calendar-controls{display:flex;align-items:center;gap:6px;margin:4px 0}
-.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
-.calendar-grid .day{padding:4px 2px;border-radius:6px;text-align:center;background:#fff;border:1px solid #eee;min-height:40px;font-size:0.85rem}
-.calendar-grid .day .date-num{font-weight:700;font-size:0.9rem}
+.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px}
+.calendar-grid .day{padding:2px 1px;border-radius:4px;text-align:center;background:#fff;border:1px solid #eee;min-height:20px;font-size:0.7rem}
+.calendar-grid .day .date-num{font-weight:700;font-size:0.75rem}
 .calendar-grid .day.has-session{background:#dff6e6;border-color:#4caf50}
 .calendar-grid .day.has-session .date-num{color:#076b19}
 .calendar-grid .day.other-month{opacity:0.35}
