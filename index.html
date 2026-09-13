@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Fitness Tracker</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#2b6cff">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main>
+    <h1>Fitness Tracker</h1>
+
+    <div id="topRow">
+      <section id="setup">
+        <button id="addExerciseBtn" type="button">Add Exercise</button>
+        <button id="newSessionBtn" type="button">Start New Session</button>
+        <button id="toggleExercisesBtn" type="button">Exercises &amp; PBs</button>
+        <button id="toggleDietBtn" type="button">Diet</button>
+      </section>
+
+      <section id="sessionEditor" class="hidden">
+        <h2>Current Session — <span id="sessionDate"></span></h2>
+        <div id="sessionEditorContent" class="compact-session">
+          <div class="session-controls">
+            <label for="sessionExerciseSelect">Exercise</label>
+            <select id="sessionExerciseSelect"></select>
+            <button id="addSetBtn" class="toggle-small">+ Set</button>
+            <button id="removeSetBtn" class="toggle-small">- Set</button>
+            <button id="addExerciseToSessionBtn">Finish Exercise</button>
+          </div>
+
+          <div id="selectedPB" class="pb">Personal best: —</div>
+
+          <div id="setsContainer"></div>
+
+          <h3>Session Entries</h3>
+          <div id="sessionEntriesList"></div>
+
+          <div class="session-actions">
+            <button id="saveSessionBtn">Finish Session</button>
+            <button id="cancelSessionBtn">Cancel</button>
+          </div>
+        </div>
+        <div id="sessionSummary" class="day-summary hidden"></div>
+        <div id="exList" class="exercises-center hidden"></div>
+        <div id="dailyNutrition" class="nutrition-center hidden">
+          <h3>Daily Nutrition</h3>
+          <div id="nutritionInputRow" class="nutrition-row">
+            <input id="nutritionName" placeholder="Food name (e.g. Rice)" />
+            <input id="nutritionAmount" type="number" placeholder="Amount" />
+            <select id="nutritionUnit"><option>calories</option><option>kJ</option></select>
+            <input id="nutritionSugar" type="number" placeholder="Sugar (g)" />
+            <input id="nutritionCaffeine" type="number" placeholder="Caffeine (g)" />
+            <button id="nutritionRecordBtn">Record</button>
+          </div>
+          <div id="nutritionList"></div>
+        </div>
+      </section>
+
+      <section id="history">
+        <div class="calendar-controls">
+          <select id="monthSelect" aria-label="Select month"></select>
+          <select id="yearSelect" aria-label="Select year"></select>
+        </div>
+        <div id="calendarGrid" class="calendar-grid"></div>
+        <div id="daySummary" class="day-summary"></div>
+      </section>
+    </div>
+
+      <!-- Exercises will render in the center session area (exList) -->
+      <!-- exList inserted into center; keep this placeholder removed -->
+    
+  </main>
+  <!-- Add Exercise Modal -->
+  <div id="addExerciseModal" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="row">
+        <label>Exercise name</label>
+        <input id="modalExerciseName" placeholder="Exercise name (e.g. Squat)" />
+      </div>
+      <div class="actions">
+        <button id="modalConfirmAddExerciseBtn">Confirm</button>
+        <button id="modalCancelAddExerciseBtn" class="secondary">Cancel</button>
+      </div>
+    </div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

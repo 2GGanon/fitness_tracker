@@ -1,0 +1,100 @@
+:root{
+  --bg:#f6f7fb;
+  --card:#fff;
+  --accent:#2b6cff;
+  --muted:#666;
+}
+*{box-sizing:border-box}
+body{font-family:system-ui,Segoe UI,Roboto,Arial;background:var(--bg);margin:0;padding:20px}
+main{max-width:900px;margin:0 auto}
+h1{margin:0 0 12px}
+section{background:var(--card);padding:12px;border-radius:8px;margin:12px 0}
+.hidden{display:none}
+/* Setup bar: compact layout for add/start/toggle */
+#setup{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px}
+#topRow{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+/* when in the topRow, stack setup controls vertically and left-align buttons */
+#topRow #setup{display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:160px;padding:8px}
+#topRow #setup > button{width:100%;text-align:left}
+/* center column: session editor sits between setup and calendar */
+#topRow #sessionEditor{flex:1 1 360px;max-width:520px;align-self:flex-start}
+#topRow #history{flex:0 0 auto;min-width:220px}
+#setup input{padding:6px;flex:0 1 260px;min-width:140px;margin-right:0}
+#setup > button{padding:6px 8px !important;margin-left:0}
+button{background:var(--accent);color:#fff;border:0;padding:8px 10px;border-radius:6px;cursor:pointer}
+button.secondary{background:#888}
+.toggle-small{padding:6px 8px;font-size:0.9rem}
+.exercise{display:flex;align-items:center;justify-content:space-between;padding:8px;border-bottom:1px solid #eee}
+/* compact controls on exercise rows */
+.exercise .controls{display:flex;gap:6px;align-items:center}
+.exercise .controls button{padding:6px 8px;font-size:0.9rem}
+.exercise .controls button.hidden{display:none}
+.exercise .controls .confirm{background:#2e9b2e}
+
+.compact-session{margin:12px auto;text-align:center;max-width:720px}
+.compact-session .session-controls{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap}
+.compact-session label{font-weight:600}
+#setsContainer{margin-top:8px}
+.set-row input{padding:6px;width:100px}
+.set-row select{padding:6px}
+.session-entries-row{padding:6px;border:1px solid #eee;border-radius:6px;margin:6px 0;background:#fafafa}
+.session-entries-row small{color:var(--muted)}
+
+/* Calendar styles (compact) */
+#calendarMonthLabel{font-weight:700;font-size:0.95rem}
+.calendar-controls{display:flex;align-items:center;gap:6px;margin:4px 0}
+.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.calendar-grid .day{padding:4px 2px;border-radius:6px;text-align:center;background:#fff;border:1px solid #eee;min-height:40px;font-size:0.85rem}
+.calendar-grid .day .date-num{font-weight:700;font-size:0.9rem}
+.calendar-grid .day.has-session{background:#dff6e6;border-color:#4caf50}
+.calendar-grid .day.has-session .date-num{color:#076b19}
+.calendar-grid .day.other-month{opacity:0.35}
+.calendar-grid .day.selected{outline:2px solid #2b6cff}
+.day-summary{margin-top:6px;padding:6px;background:#fff;border-radius:6px;border:1px solid #eee;font-size:0.88rem}
+.day-summary h4{margin:0 0 6px;font-size:0.9rem}
+.day-summary .entry{padding:4px;border-bottom:1px dashed #eee}
+
+/* Exercises list inside the center area */
+.exercises-center{max-height:320px;overflow:auto;padding:8px;border:1px solid #eee;background:#fff;border-radius:6px;margin-top:8px}
+.exercises-center .exercise{padding:6px}
+
+/* Nutrition center */
+.nutrition-center{max-height:360px;overflow:auto;padding:8px;border:1px solid #eee;background:#fff;border-radius:6px;margin-top:8px}
+.nutrition-row{display:flex;gap:6px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
+.nutrition-row input[type="number"]{width:90px;flex:0 0 90px;min-width:60px}
+.nutrition-row input[type="text"], .nutrition-row input{min-width:120px;flex:1 1 140px}
+.nutrition-row select{width:90px;flex:0 0 90px}
+.nutrition-row input#nutritionSugar, .nutrition-row input#nutritionCaffeine{width:110px;flex:0 0 110px}
+.nutrition-item{padding:6px;border-bottom:1px dashed #eee}
+
+/* Layout: compact the calendar container and right-align it */
+#history{display:flex;flex-direction:column;gap:8px;align-items:flex-end;min-width:220px}
+/* align the month controls to the right edge of the history block */
+#history > .calendar-controls{align-self:flex-end}
+/* ensure controls inside history align right */
+#history .calendar-controls{justify-content:flex-end;width:100%}
+/* let the calendar container size to its content instead of stretching */
+#calendarGrid{flex:0 0 auto;max-width:none}
+.calendar-grid{display:inline-grid}
+/* keep day summary compact and to the left of the calendar when space allows */
+.day-summary{flex:0 0 auto;min-width:200px;margin-top:0;text-align:left}
+
+/* Add exercise compact input */
+#addExerciseWrapper{display:none}
+#addExerciseWrapper:not(.hidden){display:inline-flex;gap:8px;align-items:center}
+#addExerciseWrapper input{padding:6px}
+.pb{font-size:0.9rem;color:var(--muted)}
+#modalStylesStart
+/* Modal edit exercise */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;z-index:50}
+.modal{background:#fff;padding:16px;border-radius:8px;min-width:320px;box-shadow:0 6px 24px rgba(0,0,0,0.15)}
+.modal .row{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.modal label{min-width:90px;font-weight:600}
+.modal input,.modal select{flex:1;padding:6px}
+.modal .actions{display:flex;gap:8px;justify-content:flex-end;margin-top:8px}
+#modalStylesEnd
+.sets{margin-top:8px}
+.set-row{display:flex;gap:8px;margin-bottom:6px}
+.set-row input{padding:6px;width:100px}
+.session-actions{margin-top:12px}
+.history-item{padding:8px;border-bottom:1px solid #eee}

@@ -1,0 +1,10 @@
+node_modules/
+android/
+.gradle/
+.idea/
+.vscode/
+*.zip
+*.apk
+*.keystore
+*.jks
+.DS_Store
