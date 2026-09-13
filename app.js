@@ -911,6 +911,8 @@ function init(){
   const importInput = document.getElementById('importDataInput')
   if(importBtn) importBtn.addEventListener('click', ()=> importInput && importInput.click())
   if(importInput) importInput.addEventListener('change', handleImportFile)
+  const toggleCalendarBtn = document.getElementById('toggleCalendarBtn')
+  if(toggleCalendarBtn) toggleCalendarBtn.addEventListener('click', toggleCalendar)
   updateExercisesVisibility()
   // auto-finish diet view if the active date has passed
   const todayKey = (new Date()).toISOString().split('T')[0]
@@ -930,8 +932,28 @@ function init(){
   renderExercises();
   // populate month/year dropdowns for calendar navigation
   populateMonthYearSelectors()
+  updateCalendarVisibility()
   renderCalendar()
   updateNewSessionButton()
+}
+
+function toggleCalendar(){
+  state.data.settings = state.data.settings || {}
+  // default to visible true if not set
+  state.data.settings.showCalendar = !((state.data.settings.showCalendar === undefined) ? true : state.data.settings.showCalendar)
+  saveData(state.data)
+  updateCalendarVisibility()
+}
+
+function updateCalendarVisibility(){
+  const history = document.getElementById('history')
+  const btn = document.getElementById('toggleCalendarBtn')
+  const visible = state.data.settings ? (state.data.settings.showCalendar === undefined ? true : !!state.data.settings.showCalendar) : true
+  if(history){
+    if(visible) history.classList.remove('hidden')
+    else history.classList.add('hidden')
+  }
+  if(btn) btn.setAttribute('aria-pressed', visible ? 'true' : 'false')
 }
 
 // Export current state.data as JSON file for backup
