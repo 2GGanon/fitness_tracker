@@ -98,3 +98,32 @@ button.secondary{background:#888}
 .set-row input{padding:6px;width:100px}
 .session-actions{margin-top:12px}
 .history-item{padding:8px;border-bottom:1px solid #eee}
+
+/* Responsive: compact top row for small screens (phones) */
+@media (max-width:480px){
+  body{padding:12px}
+  main{max-width:100%;padding:0}
+  /* keep setup and calendar on one row */
+  #topRow{display:flex;flex-wrap:nowrap;align-items:center;gap:8px}
+  #topRow #setup{display:flex;flex-direction:row;align-items:center;gap:6px;min-width:0;padding:6px}
+  #topRow #setup > button{width:auto;text-align:center;padding:6px 8px;font-size:0.85rem}
+  /* reduce history width so it can sit next to setup */
+  #topRow #history{flex:0 0 auto;min-width:0;order:2;margin-left:auto}
+  /* collapse session editor content on small screens to save horizontal space */
+  #topRow #sessionEditor{flex:0 0 auto;order:3}
+  #sessionEditorContent{display:none}
+  #sessionEditor h2{font-size:1rem}
+  /* tighten calendar day sizing */
+  .calendar-grid .day{min-height:32px;padding:3px 2px;font-size:0.78rem}
+  .calendar-grid .day .date-num{font-size:0.8rem}
+  /* reduce modal width */
+  .modal{min-width:260px}
+  /* nutrition inputs shrink */
+  .nutrition-row input[type="number"], .nutrition-row select{flex:0 0 68px;width:68px}
+  .nutrition-row input{min-width:80px}
+}
+
+@media (max-width:360px){
+  /* ultra-compact: allow topRow to scroll horizontally if still tight */
+  #topRow{overflow-x:auto;padding-bottom:6px}
+}
