@@ -904,6 +904,13 @@ function init(){
   if(toggleDietBtn) toggleDietBtn.addEventListener('click', toggleDiet)
   const nutritionRecordBtn = document.getElementById('nutritionRecordBtn')
   if(nutritionRecordBtn) nutritionRecordBtn.addEventListener('click', recordNutrition)
+  // export/import backup buttons
+  const exportBtn = document.getElementById('exportDataBtn')
+  if(exportBtn) exportBtn.addEventListener('click', exportData)
+  const importBtn = document.getElementById('importDataBtn')
+  const importInput = document.getElementById('importDataInput')
+  if(importBtn) importBtn.addEventListener('click', ()=> importInput && importInput.click())
+  if(importInput) importInput.addEventListener('change', handleImportFile)
   updateExercisesVisibility()
   // auto-finish diet view if the active date has passed
   const todayKey = (new Date()).toISOString().split('T')[0]
@@ -925,6 +932,44 @@ function init(){
   populateMonthYearSelectors()
   renderCalendar()
   updateNewSessionButton()
+}
+
+// Export current state.data as JSON file for backup
+function exportData(){
+  try{
+    const data = state.data || {exercises:[], sessions:[], settings:{}}
+    const json = JSON.stringify(data, null, 2)
+    const blob = new Blob([json], {type: 'application/json'})
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    const stamp = new Date().toISOString().split('T')[0]
+    a.download = `fitness_tracker_backup_${stamp}.json`
+    document.body.appendChild(a); a.click(); a.remove()
+    URL.revokeObjectURL(url)
+  }catch(e){ alert('Export failed: '+e.message) }
+}
+
+function handleImportFile(e){
+  const f = e.target.files && e.target.files[0]
+  if(!f) return
+  const reader = new FileReader()
+  reader.onload = ()=>{
+    try{
+      const parsed = JSON.parse(reader.result)
+      if(!parsed || typeof parsed !== 'object') return alert('Invalid backup file')
+      if(!confirm('Importing will replace your current local data. Continue?')) return
+      state.data = parsed
+      saveData(state.data)
+      // reload UI to reflect imported data
+      ensureExerciseObjects()
+      renderExercises(); renderCalendar(); renderSessionEditor(); updateNewSessionButton()
+      alert('Import successful')
+    }catch(err){ alert('Import failed: '+err.message) }
+  }
+  reader.readAsText(f)
+  // clear input so the same file can be re-imported later if needed
+  e.target.value = null
 }
 
 function registerServiceWorker(){

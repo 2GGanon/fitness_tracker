@@ -44,8 +44,8 @@ button.secondary{background:#888}
 #calendarMonthLabel{font-weight:700;font-size:0.95rem}
 .calendar-controls{display:flex;align-items:center;gap:6px;margin:4px 0}
 .calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px}
-.calendar-grid .day{padding:2px 1px;border-radius:4px;text-align:center;background:#fff;border:1px solid #eee;min-height:20px;font-size:0.7rem}
-.calendar-grid .day .date-num{font-weight:700;font-size:0.75rem}
+.calendar-grid .day{padding:1px 0.5px;border-radius:3px;text-align:center;background:#fff;border:1px solid #eee;min-height:16px;font-size:0.62rem}
+.calendar-grid .day .date-num{font-weight:700;font-size:0.68rem}
 .calendar-grid .day.has-session{background:#dff6e6;border-color:#4caf50}
 .calendar-grid .day.has-session .date-num{color:#076b19}
 .calendar-grid .day.other-month{opacity:0.35}
@@ -122,6 +122,23 @@ button.secondary{background:#888}
   /* nutrition inputs shrink */
   .nutrition-row input[type="number"], .nutrition-row select{flex:0 0 68px;width:68px}
   .nutrition-row input{min-width:80px}
+}
+
+/* Strong override for small-to-medium phones: ensure session editor becomes full-width below the top controls */
+@media (max-width:600px){
+  #topRow{display:flex;flex-wrap:wrap;align-items:flex-start;gap:8px}
+  #topRow #setup{order:1;flex:0 1 auto;min-width:0}
+  #topRow #history{order:2;flex:0 1 auto;min-width:0;margin-left:auto}
+  /* make the history block narrower to give more room to setup buttons */
+  #topRow #history{flex-basis:110px;max-width:120px}
+  #topRow #sessionEditor{order:3;flex-basis:100% !important;width:100% !important;display:block !important;align-self:stretch;margin-top:6px}
+  #sessionEditorContent{display:block !important}
+  /* ensure no child forces row layout */
+  #topRow > *{min-width:0}
+  /* hide calendar weekday headers on narrow screens to save vertical and horizontal space */
+  .calendar-grid .day.header{display:none}
+  .calendar-grid{gap:0}
+  .calendar-grid .day{border-width:0.5px}
 }
 
 @media (max-width:360px){
