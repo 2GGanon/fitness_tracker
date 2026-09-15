@@ -97,16 +97,12 @@ button.secondary{background:#888}
 #nutritionMenuSelect{width:88px;min-width:0;padding:5px}
 .nutrition-heading-row button,.nutrition-row-secondary button{padding:5px}
 button:disabled{opacity:.5;cursor:not-allowed}
-.nutrition-row{display:flex;gap:6px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
+.nutrition-row{display:grid;gap:6px;align-items:center;width:100%;min-width:0;margin-bottom:8px}
+.nutrition-row-primary{grid-template-columns:minmax(0,2fr) minmax(0,1.05fr) minmax(0,1.05fr)}
+.nutrition-row-secondary{grid-template-columns:minmax(0,1fr) minmax(0,1.25fr) auto auto}
 .nutrition-inputs .nutrition-row:last-child{margin-bottom:0}
-.nutrition-row input[type="number"]{width:90px;flex:0 0 90px;min-width:60px}
-.nutrition-row input[type="text"], .nutrition-row input{min-width:120px;flex:1 1 140px}
-#nutritionName{width:160px;max-width:100%;min-width:0;flex:0 0 160px}
-#nutritionAmount{width:82px;min-width:0;flex:0 0 82px}
-.nutrition-row select{width:90px;flex:0 0 90px}
-#nutritionUnit{width:82px;min-width:0;flex:0 0 82px}
-.nutrition-row input#nutritionSugar{width:88px;min-width:0;flex:0 0 88px}
-.nutrition-row input#nutritionCaffeine{width:105px;min-width:0;flex:0 0 105px}
+.nutrition-row input,.nutrition-row select{width:100%;min-width:0;padding:4px;font-size:clamp(0.58rem,2.5vw,0.78rem)}
+.nutrition-row-secondary button{min-width:0;padding:4px 3px;font-size:clamp(0.58rem,2.5vw,0.76rem);white-space:nowrap}
 .nutrition-item{padding:6px;border-bottom:1px dashed #eee}
 
 /* Layout: compact the calendar container and right-align it */
@@ -169,6 +165,4 @@ button:disabled{opacity:.5;cursor:not-allowed}
   #addExerciseModal,#sessionEditor{grid-column:1 / -1;width:100%;min-width:0}
   #sessionEditor h2{font-size:0.9rem}
   .modal{min-width:0}
-  .nutrition-row input[type="number"],.nutrition-row select{flex-basis:68px;width:68px}
-  .nutrition-row input{min-width:80px}
 }
