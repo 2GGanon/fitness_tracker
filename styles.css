@@ -147,57 +147,28 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .session-actions{margin-top:12px}
 .history-item{padding:8px;border-bottom:1px solid #eee}
 
-/* Responsive: compact top row for small screens (phones) */
-@media (max-width:480px){
+/* Responsive phone layout: both top columns scale with the available width. */
+@media (max-width:600px){
   body{padding:12px}
   main{max-width:100%;padding:0}
-  /* layout: keep setup and calendar on the first row, session editor flows to a full-width second row */
-  #topRow{display:flex;flex-wrap:wrap;align-items:flex-start;gap:8px}
-  #leftControls > h1{order:0;flex:0 0 100%}
-  #mainButtonsBar{display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:0;padding:8px;padding-left:0;order:1}
-  #mainButtonsBar > button{width:128px;text-align:center;padding:6px 8px;font-size:0.85rem}
-  /* place history to the right of setup on the first row */
-  #topRow #history{flex:0 0 auto;min-width:0;order:2;margin-left:auto}
-  #topRow #history > .calendar-controls{align-self:flex-end}
-  /* session editor becomes a full-width block below (second row) */
-  #topRow #sessionEditor{flex:0 0 100%;order:4;align-self:stretch;margin-top:6px}
-  #sessionEditorContent{display:block}
-  #sessionEditor h2{font-size:1rem}
-  /* tighten calendar day sizing */
-  .calendar-grid .day{min-height:20px;padding:2px 1px;font-size:0.68rem}
-  .calendar-grid .day .date-num{font-size:0.76rem}
-  /* reduce modal width */
-  .modal{min-width:0}
-  /* nutrition inputs shrink */
-  .nutrition-row input[type="number"], .nutrition-row select{flex:0 0 68px;width:68px}
-  .nutrition-row input{min-width:80px}
-}
-
-/* Strong override for small-to-medium phones: ensure session editor becomes full-width below the top controls */
-@media (max-width:600px){
-  #topRow{display:flex;flex-wrap:wrap;align-items:flex-start;gap:8px}
-  #leftControls > h1{order:0;flex:0 0 100%}
-  #mainButtonsBar{order:1;flex:0 1 auto;min-width:0}
-  #topRow #history{order:2;flex:0 1 auto;min-width:0;margin-left:auto}
-  /* Keep the selected-day summary beside the compact phone calendar. */
-  #topRow #history{flex:0 0 200px;max-width:200px}
-  #topRow #sessionEditor{order:4;flex-basis:100% !important;width:100% !important;display:block !important;align-self:stretch;margin-top:6px}
-  #sessionEditorContent{display:block !important}
-  /* ensure no child forces row layout */
-  #topRow > *{min-width:0}
-  /* hide calendar weekday headers on narrow screens to save vertical and horizontal space */
+  #topRow{display:grid;grid-template-columns:minmax(0,38fr) minmax(0,62fr);grid-template-rows:auto auto;gap:clamp(4px,2vw,8px);overflow:visible}
+  #leftControls > h1{grid-column:1 / -1;grid-row:1;width:100%}
+  #mainButtonsBar{grid-column:1;grid-row:2;width:100%;min-width:0;padding:8px 4px 8px 0}
+  #mainButtonsBar .btn-stack{width:100%;min-width:0}
+  #mainButtonsBar .btn-stack > button{width:100%;min-width:0;padding:5px 2px;font-size:clamp(0.65rem,3vw,0.8rem);white-space:nowrap}
+  #topRow #history{grid-column:2;grid-row:2;width:100%;max-width:none;min-width:0;margin:8px 0;padding:2px}
+  #history .calendar-controls{width:100%;min-width:0;align-self:stretch}
+  #monthSelect{flex:1 1 auto;min-width:0;max-width:100%;font-size:0.72rem}
+  #yearSelect{flex:0 1 62px;width:62px;min-width:0;font-size:0.72rem}
+  .calendar-body{width:100%;min-width:0}
+  #calendarGrid{display:grid;width:100%;max-width:100%;min-width:0;grid-template-columns:repeat(7,minmax(0,1fr));gap:0}
+  .calendar-grid .day{width:auto;min-width:0;min-height:18px;padding:1px 0;border-width:0.5px;overflow:hidden;font-size:clamp(0.58rem,2.7vw,0.72rem)}
+  .calendar-grid .day .date-num{max-width:100%;overflow:hidden;font-size:inherit;white-space:nowrap}
   .calendar-grid .day.header{display:none}
-  .calendar-grid{gap:0}
-  .calendar-grid .day{border-width:0.5px}
-
-  /* define compact calendar cell size and make day-summary match calendar width */
-  :root{--cal-cell:18px}
-  .calendar-grid{grid-template-columns:repeat(7,var(--cal-cell))}
-  .calendar-grid .day{min-height:var(--cal-cell);padding:1px 0.5px}
-  #history{align-items:flex-start}
-  .day-summary{width:160px;box-sizing:border-box}
-}
-
-@media (max-width:360px){
-  #topRow{overflow:visible;padding-bottom:6px}
+  .calendar-body > .day-summary{width:100%;max-width:100%;box-sizing:border-box}
+  #addExerciseModal,#sessionEditor{grid-column:1 / -1;width:100%;min-width:0}
+  #sessionEditor h2{font-size:0.9rem}
+  .modal{min-width:0}
+  .nutrition-row input[type="number"],.nutrition-row select{flex-basis:68px;width:68px}
+  .nutrition-row input{min-width:80px}
 }
