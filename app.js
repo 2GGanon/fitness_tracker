@@ -419,7 +419,7 @@ function renderSessionEditor(){
     const last = state.currentSession?._lastEditedExercise
     if(last){
       const found = Array.from(select.options).findIndex(o=>o.value===last)
-      if(found>=0) select.selectedIndex = found, editSessionEntry(last)
+      if(found>=0) select.selectedIndex = found, editSessionEntry(last, false)
       else { select.selectedIndex = 0; prepareSetsForSelected() }
     } else {
       select.selectedIndex = 0
@@ -638,7 +638,7 @@ function renderSessionEntriesList(){
   })
 }
 
-function editSessionEntry(ex){
+function editSessionEntry(ex, focusFirstInput = true){
   const select = document.getElementById('sessionExerciseSelect')
   if(!select || !state.currentSession?.entries?.[ex]) return
   const selectedIndex = Array.from(select.options).findIndex(option=>option.value === ex)
@@ -649,7 +649,7 @@ function editSessionEntry(ex){
   const wrap = document.getElementById('setsContainer'); wrap.innerHTML = ''
   sets.forEach(s=> createSetRow('setsContainer', s.weight, s.reps, s.unit))
   const firstInput = wrap.querySelector('.set-weight')
-  if(firstInput) firstInput.focus()
+  if(firstInput && focusFirstInput) firstInput.focus()
 }
 
 function collectSessionFromEditor(){

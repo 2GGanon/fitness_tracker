@@ -39,7 +39,7 @@ vm.runInContext(`
     }
   }
   createSetRow = (...args)=>restored.push(args)
-  editSessionEntry('Bench')
+  editSessionEntry('Bench', false)
 `, context)
 
 assert.strictEqual(select.selectedIndex, 1)
@@ -49,6 +49,9 @@ assert.deepStrictEqual(JSON.parse(JSON.stringify(restored)), [
   ['setsContainer', 90, 8, 'kg']
 ])
 assert.strictEqual(vm.runInContext('state.currentSession._lastEditedExercise', context), 'Bench')
+assert.strictEqual(focused, false)
+
+vm.runInContext("editSessionEntry('Bench')", context)
 assert.strictEqual(focused, true)
 
 console.log('session entry edit tests passed')
