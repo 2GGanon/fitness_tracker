@@ -3,13 +3,14 @@ const STORAGE_KEY = 'fitness_tracker_data_v1'
 
 function loadData(){
   const raw = localStorage.getItem(STORAGE_KEY)
-  if(!raw) return {exercises: [], sessions: [], settings: {showExercises: false}}
+  if(!raw) return {exercises: [], sessions: [], nutritionPresets: [], settings: {showExercises: false}}
   try{
     const parsed = JSON.parse(raw)
     if(!parsed.settings) parsed.settings = {showExercises:false}
+    if(!Array.isArray(parsed.nutritionPresets)) parsed.nutritionPresets = []
     return parsed
   }catch(e){
-    return {exercises: [], sessions: [], settings: {showExercises: false}}
+    return {exercises: [], sessions: [], nutritionPresets: [], settings: {showExercises: false}}
   }
 }
 
@@ -24,29 +25,26 @@ function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2
 function renderExercises(){
   const el = document.getElementById('exList')
   el.innerHTML = ''
-  const pbs = computeAllPBs()
   state.data.exercises.forEach((exObj, idx)=>{
     const name = exObj.name
     const d = document.createElement('div'); d.className='exercise'; d.dataset.index = idx
-    const left = document.createElement('div')
-    const heaviest = pbs[name]?.heaviest
-    const highReps = pbs[name]?.highReps
-    const bestTime = pbs[name]?.bestTime
-    const longDist = pbs[name]?.longestDistance
-    let pbHtml = ''
-    if(heaviest){ pbHtml += `Weight: ${heaviest.weight}${heaviest.unit} × ${heaviest.reps||''}` }
-    else if(bestTime){ pbHtml += `Time: ${bestTime.weight}${bestTime.unit}` }
-    else if(longDist){ pbHtml += `Distance: ${longDist.weight}${longDist.unit}` }
-    // show reps PB if available
-    if(highReps){ pbHtml += ` &nbsp; Reps: ${highReps.reps} @ ${highReps.weight}${highReps.unit}` }
-    if(!pbHtml) pbHtml = '—'
-    left.innerHTML = `<strong>${name}</strong><div class="pb">${pbHtml}</div>`
+    const left = document.createElement('div'); left.className='exercise-details'
+    const heading = document.createElement('strong'); heading.textContent = name
+    left.appendChild(heading)
+    const setPBs = Array.isArray(exObj.setPBs) ? exObj.setPBs : []
+    setPBs.forEach((set, setIndex)=>{
+      if(!set) return
+      const pbRow = document.createElement('div'); pbRow.className='exercise-pb-row'
+      const setLabel = document.createElement('span'); setLabel.className='exercise-pb-set'; setLabel.textContent=`Set ${setIndex + 1}`
+      const details = document.createElement('span'); details.textContent=`${set.weight}${set.unit}×${set.reps || 0}`
+      pbRow.appendChild(setLabel); pbRow.appendChild(details); left.appendChild(pbRow)
+    })
     const controls = document.createElement('div'); controls.className='controls'
     const cancelBtn = document.createElement('button'); cancelBtn.textContent='Cancel'; cancelBtn.className='secondary hidden'; cancelBtn.onclick = ()=>{ renderExercises() }
     const confirmBtn = document.createElement('button'); confirmBtn.textContent='Confirm'; confirmBtn.className='confirm hidden'
     const editBtn = document.createElement('button'); editBtn.textContent='Edit'; editBtn.onclick=()=>openEditExerciseInline(idx)
     const deleteBtn = document.createElement('button'); deleteBtn.textContent='Delete'; deleteBtn.className='secondary'; deleteBtn.onclick=()=> deleteExercise(idx)
-    controls.appendChild(cancelBtn); controls.appendChild(confirmBtn); controls.appendChild(editBtn); controls.appendChild(deleteBtn)
+    controls.appendChild(confirmBtn); controls.appendChild(cancelBtn); controls.appendChild(editBtn); controls.appendChild(deleteBtn)
     d.appendChild(left); d.appendChild(controls)
     el.appendChild(d)
   })
@@ -54,7 +52,11 @@ function renderExercises(){
 
 function ensureExerciseObjects(){
   // migrate string entries to objects with optional overrides
-  state.data.exercises = (state.data.exercises || []).map(e=> typeof e === 'string' ? {name: e, overrides:{}} : (e && e.name ? e : {name: String(e), overrides:{}}))
+  state.data.exercises = (state.data.exercises || []).map(e=>{
+    const exercise = typeof e === 'string' ? {name: e, overrides:{}} : (e && e.name ? e : {name: String(e), overrides:{}})
+    if(!Array.isArray(exercise.setPBs)) exercise.setPBs = []
+    return exercise
+  })
 }
 
 function updateExercisesVisibility(){
@@ -195,7 +197,69 @@ function recordNutrition(){
   nameEl.value=''; amtEl.value=''
   if(sugarEl) sugarEl.value=''
   if(caffeineEl) caffeineEl.value=''
+  renderNutritionMenu()
   renderDailyNutrition(); renderCalendar(); renderExercises();
+}
+
+function renderNutritionMenu(selectedId){
+  const select = document.getElementById('nutritionMenuSelect')
+  const deleteBtn = document.getElementById('deleteNutritionPresetBtn')
+  if(!select) return
+  const presets = Array.isArray(state.data.nutritionPresets) ? state.data.nutritionPresets : []
+  const requestedId = selectedId === undefined ? select.value : selectedId
+  select.innerHTML = ''
+  select.appendChild(new Option('Menu', ''))
+  presets.forEach(preset=> select.appendChild(new Option(preset.name, preset.id)))
+  select.value = presets.some(preset=>preset.id === requestedId) ? requestedId : ''
+  if(deleteBtn) deleteBtn.disabled = !select.value
+}
+
+function applyNutritionPreset(){
+  const select = document.getElementById('nutritionMenuSelect')
+  const deleteBtn = document.getElementById('deleteNutritionPresetBtn')
+  if(!select) return
+  const preset = (state.data.nutritionPresets || []).find(item=>item.id === select.value)
+  if(deleteBtn) deleteBtn.disabled = !preset
+  if(!preset) return
+  document.getElementById('nutritionName').value = preset.name
+  document.getElementById('nutritionAmount').value = preset.amount
+  document.getElementById('nutritionUnit').value = preset.unit === 'kj' ? 'kJ' : preset.unit
+  document.getElementById('nutritionSugar').value = preset.sugar_g || ''
+  document.getElementById('nutritionCaffeine').value = preset.caffeine_g || ''
+}
+
+function saveNutritionPreset(){
+  const nameEl = document.getElementById('nutritionName')
+  const amountEl = document.getElementById('nutritionAmount')
+  const unitEl = document.getElementById('nutritionUnit')
+  const sugarEl = document.getElementById('nutritionSugar')
+  const caffeineEl = document.getElementById('nutritionCaffeine')
+  const name = nameEl ? nameEl.value.trim() : ''
+  const amount = amountEl ? (parseFloat(amountEl.value) || 0) : 0
+  if(!name) return alert('Enter a food name')
+  if(amount <= 0) return alert('Enter a positive amount')
+  state.data.nutritionPresets = Array.isArray(state.data.nutritionPresets) ? state.data.nutritionPresets : []
+  const existing = state.data.nutritionPresets.find(item=>item.name.toLowerCase() === name.toLowerCase())
+  const preset = {
+    id: existing ? existing.id : uid(),
+    name,
+    amount,
+    unit: unitEl ? unitEl.value : 'calories',
+    sugar_g: sugarEl ? (parseFloat(sugarEl.value) || undefined) : undefined,
+    caffeine_g: caffeineEl ? (parseFloat(caffeineEl.value) || undefined) : undefined
+  }
+  if(existing) Object.assign(existing, preset)
+  else state.data.nutritionPresets.push(preset)
+  saveData(state.data)
+  renderNutritionMenu(preset.id)
+}
+
+function deleteNutritionPreset(){
+  const select = document.getElementById('nutritionMenuSelect')
+  if(!select || !select.value) return alert('Select a Menu item to delete')
+  state.data.nutritionPresets = (state.data.nutritionPresets || []).filter(item=>item.id !== select.value)
+  saveData(state.data)
+  renderNutritionMenu('')
 }
 
 function deleteNutritionItem(id, dateKey, inSession){
@@ -294,10 +358,22 @@ function addExercise(name){
   name = name.trim()
   if(!name) return
   if(!state.data.exercises.some(e=> e.name === name)){
-    state.data.exercises.push({name, overrides:{}})
+    state.data.exercises.push({name, overrides:{}, setPBs:[]})
     saveData(state.data)
     renderExercises(); renderCalendar()
   }
+}
+
+function formatSessionDateTime(value){
+  const rounded = new Date(value)
+  if(Number.isNaN(rounded.getTime())) return ''
+  rounded.setMinutes(rounded.getMinutes() >= 30 ? 60 : 0, 0, 0)
+  return rounded.toLocaleString(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric'
+  })
 }
 
 function startNewSession(){
@@ -310,7 +386,7 @@ function startNewSession(){
     return
   }
   state.currentSession = {id:uid(), date:(new Date()).toISOString(), entries:{}}
-  document.getElementById('sessionDate').textContent = new Date().toLocaleString()
+  document.getElementById('sessionDate').textContent = formatSessionDateTime(state.currentSession.date)
   document.getElementById('sessionEditor').classList.remove('hidden')
   clearCenterSummary()
   renderSessionEditor()
@@ -325,6 +401,8 @@ function startSessionAndOpenFor(exName){
   }
 }
 function renderSessionEditor(){
+  const sessionDate = document.getElementById('sessionDate')
+  if(sessionDate && state.currentSession) sessionDate.textContent = formatSessionDateTime(state.currentSession.date)
   const select = document.getElementById('sessionExerciseSelect')
   select.innerHTML = ''
   state.data.exercises.forEach(exObj=>{
@@ -389,19 +467,74 @@ function prepareSetsForSelected(){
   setsContainer.innerHTML = ''
   const defaultUnit = getMostRecentUnitForExercise(name)
   for(let i=0;i<3;i++) createSetRow('setsContainer', '', '', defaultUnit)
-  updateSelectedPB(name)
+}
+
+function getSetPB(exName, setIndex){
+  const exercise = (state.data.exercises || []).find(item=>item.name === exName)
+  return exercise && Array.isArray(exercise.setPBs) ? (exercise.setPBs[setIndex] || null) : null
+}
+
+function saveSetPB(exName, setIndex, weight, unit, reps){
+  const exercise = (state.data.exercises || []).find(item=>item.name === exName)
+  const value = parseFloat(weight) || 0
+  const repetitionCount = parseInt(reps) || 0
+  if(!exercise || value <= 0 || repetitionCount <= 0) return null
+  if(!Array.isArray(exercise.setPBs)) exercise.setPBs = []
+  const pb = {
+    setNumber: setIndex + 1,
+    weight: value,
+    unit: unit || 'kg',
+    reps: repetitionCount,
+    date: state.currentSession?.date || (new Date()).toISOString()
+  }
+  exercise.setPBs[setIndex] = pb
+  saveData(state.data)
+  if(document.getElementById('exList')) renderExercises()
+  return pb
+}
+
+function formatSetPB(exName, setIndex){
+  const pb = getSetPB(exName, setIndex)
+  if(!pb) return 'PB —'
+  return `PB ${pb.weight}${pb.unit}×${pb.reps || 0}`
 }
 
 function createSetRow(containerId,weight='',reps='',unit='kg'){
   const wrap = document.getElementById(containerId)
   if(!wrap) return
+  const setIndex = wrap.querySelectorAll('.set-row').length
+  const exerciseSelect = document.getElementById('sessionExerciseSelect')
+  const exerciseName = exerciseSelect ? exerciseSelect.value : ''
   const row = document.createElement('div'); row.className='set-row'
-  const w = document.createElement('input'); w.placeholder='weight'; w.value=weight; w.type='number'; w.min='0'
+  const w = document.createElement('input'); w.className='set-weight'; w.placeholder='weight'; w.value=weight; w.type='number'; w.min='0'
   const unitSel = document.createElement('select'); unitSel.innerHTML = '<option>kg</option><option>lbs</option><option>s</option><option>min</option><option>km</option><option>miles</option>'; unitSel.value = unit
-  const r = document.createElement('input'); r.placeholder='reps'; r.value=reps; r.type='number'; r.min='0'
-  const del = document.createElement('button'); del.textContent='–'; del.className='secondary'; del.onclick=()=>row.remove()
-  row.appendChild(w); row.appendChild(unitSel); row.appendChild(r); row.appendChild(del)
+  const r = document.createElement('input'); r.className='set-reps'; r.placeholder='reps'; r.value=reps; r.type='number'; r.min='0'
+  const pb = document.createElement('span'); pb.className='set-pb'; pb.title=`Personal best for set ${setIndex + 1}`
+  const star = document.createElement('button'); star.className='set-pb-star'; star.type='button'; star.setAttribute('aria-label', `Set row ${setIndex + 1} as personal best`)
+  const updatePB = ()=>{
+    const savedPB = getSetPB(exerciseName, setIndex)
+    pb.textContent = formatSetPB(exerciseName, setIndex)
+    const matches = !!savedPB
+      && Number(savedPB.weight) === (parseFloat(w.value) || 0)
+      && savedPB.unit === unitSel.value
+      && Number(savedPB.reps) === (parseInt(r.value) || 0)
+    star.textContent = matches ? '★' : '☆'
+    star.classList.toggle('active', matches)
+    star.setAttribute('aria-pressed', matches ? 'true' : 'false')
+  }
+  star.onclick = ()=>{
+    if(!saveSetPB(exerciseName, setIndex, w.value, unitSel.value, r.value)){
+      alert('Enter a value and reps before setting a PB.')
+      return
+    }
+    updatePB()
+  }
+  unitSel.addEventListener('change', updatePB)
+  w.addEventListener('input', updatePB)
+  r.addEventListener('input', updatePB)
+  row.appendChild(w); row.appendChild(unitSel); row.appendChild(r); row.appendChild(pb); row.appendChild(star)
   wrap.appendChild(row)
+  updatePB()
 }
 
 function addSetRow(){
@@ -485,22 +618,38 @@ function renderSessionEntriesList(){
   const entries = state.currentSession?.entries || {}
   Object.keys(entries).forEach(ex=>{
     const d = document.createElement('div'); d.className='session-entries-row'
-    const sets = entries[ex].map(s=>`${s.weight}${s.unit}×${s.reps}`).join(', ')
-    d.innerHTML = `<strong>${ex}</strong> <small>${sets}</small>`
-    const edit = document.createElement('button'); edit.textContent='Edit'; edit.onclick=()=> editSessionEntry(ex)
+    const details = document.createElement('div'); details.className='session-entry-details'
+    const heading = document.createElement('strong'); heading.textContent=ex
+    details.appendChild(heading)
+    entries[ex].forEach((set, setIndex)=>{
+      const setRow = document.createElement('small'); setRow.className='session-entry-set'; setRow.textContent=`Set ${setIndex + 1}: ${set.weight}${set.unit}×${set.reps}`
+      details.appendChild(setRow)
+    })
+    const controls = document.createElement('div'); controls.className='session-entry-controls'
+    const edit = document.createElement('button'); edit.textContent='Edit'; edit.onclick=()=>{
+      editSessionEntry(ex)
+      document.querySelectorAll('.session-entries-row.editing').forEach(row=>row.classList.remove('editing'))
+      d.classList.add('editing')
+    }
     const remove = document.createElement('button'); remove.textContent='Remove'; remove.className='secondary'; remove.onclick=()=>{ delete state.currentSession.entries[ex]; renderSessionEntriesList(); renderExercises() }
-    d.appendChild(edit); d.appendChild(remove)
+    controls.appendChild(edit); controls.appendChild(remove)
+    d.appendChild(details); d.appendChild(controls)
     el.appendChild(d)
   })
 }
 
 function editSessionEntry(ex){
   const select = document.getElementById('sessionExerciseSelect')
-  Array.from(select.options).forEach((opt,i)=>{ if(opt.value===ex) select.selectedIndex=i })
+  if(!select || !state.currentSession?.entries?.[ex]) return
+  const selectedIndex = Array.from(select.options).findIndex(option=>option.value === ex)
+  if(selectedIndex < 0) return
+  select.selectedIndex = selectedIndex
+  state.currentSession._lastEditedExercise = ex
   const sets = state.currentSession.entries[ex] || []
   const wrap = document.getElementById('setsContainer'); wrap.innerHTML = ''
   sets.forEach(s=> createSetRow('setsContainer', s.weight, s.reps, s.unit))
-  updateSelectedPB(ex)
+  const firstInput = wrap.querySelector('.set-weight')
+  if(firstInput) firstInput.focus()
 }
 
 function collectSessionFromEditor(){
@@ -638,41 +787,34 @@ function showDaySummary(dateKey, cell){
   const sessionsByDate = getSessionsByDate()
   const sessions = sessionsByDate[dateKey] || []
   summary.innerHTML = ''
-  const title = document.createElement('h4')
-  title.textContent = new Date(dateKey).toLocaleDateString()
-  summary.appendChild(title)
-  if(sessions.length===0){
-    const none = document.createElement('div')
-    none.textContent = 'No sessions'
-    summary.appendChild(none)
-    return
+  if(sessions.length){
+    sessions.forEach((s, idx)=>{
+      const entry = document.createElement('div')
+      entry.className = 'entry'
+      const header = document.createElement('button')
+      header.className = 'toggle-session'
+      header.textContent = String(idx+1)
+      header.onclick = ()=>{
+        // show this session in center session area
+        showCenterSessionSummary(s)
+      }
+      entry.appendChild(header)
+      summary.appendChild(entry)
+    })
   }
-
-  sessions.forEach((s, idx)=>{
-    const entry = document.createElement('div')
-    entry.className = 'entry'
-    const header = document.createElement('button')
-    header.className = 'toggle-session'
-    header.textContent = `Session ${idx+1}`
-    header.onclick = ()=>{
-      // show this session in center session area
-      showCenterSessionSummary(s)
-    }
-    entry.appendChild(header)
-    summary.appendChild(entry)
-  })
 
   // also show any standalone daily nutrition entries for the date
   const nutrit = (state.data.nutritionByDate && state.data.nutritionByDate[dateKey]) || []
   if(nutrit.length){
-    const title2 = document.createElement('h4')
-    title2.textContent = 'Nutrition'
-    summary.appendChild(title2)
     // show a single button to open the nutrition summary in the center
+    const entry = document.createElement('div')
+    entry.className = 'entry'
     const openBtn = document.createElement('button')
-    openBtn.textContent = `Nutrition (${nutrit.length})`
+    openBtn.className = 'toggle-session'
+    openBtn.textContent = 'Diet'
     openBtn.onclick = ()=> showCenterNutritionSummary(dateKey)
-    summary.appendChild(openBtn)
+    entry.appendChild(openBtn)
+    summary.appendChild(entry)
   }
 }
 
@@ -797,88 +939,62 @@ function equalizeMainButtonSizes(){
 // also ensure sizing after full load (fonts/resources)
 window.addEventListener('load', ()=>{ try{ equalizeMainButtonSizes() }catch(e){} })
 
-function updateSelectedPB(name){
-  const pbs = computeAllPBs()
-  const el = document.getElementById('selectedPB')
-  const pb = pbs[name]
-  if(!pb || Object.keys(pb).length===0){ el.textContent = 'Personal best: —'; return }
-  // prefer weight PBs, then time, then distance
-  if(pb.heaviest){ el.textContent = `Personal best — Weight: ${pb.heaviest.weight}${pb.heaviest.unit} × ${pb.heaviest.reps||''}`; return }
-  if(pb.bestTime){ el.textContent = `Personal best — Time: ${pb.bestTime.weight}${pb.bestTime.unit}`; return }
-  if(pb.longestDistance){ el.textContent = `Personal best — Distance: ${pb.longestDistance.weight}${pb.longestDistance.unit}`; return }
-  if(pb.highReps) { el.textContent = `Personal best — Reps: ${pb.highReps.reps} @ ${pb.highReps.weight}${pb.highReps.unit}`; return }
-  el.textContent = 'Personal best: —'
-}
-
 function openEditExerciseInline(idx){
   const exObj = state.data.exercises[idx]
   if(!exObj) return
-  const pbs = computeAllPBs()
-  const currentPB = pbs[exObj.name] || {}
+  if(!Array.isArray(exObj.setPBs)) exObj.setPBs = []
   const container = document.querySelector(`#exList .exercise[data-index='${idx}']`)
   if(!container) return
-  const left = container.querySelector('div')
-  // build inline editor
+  const left = container.querySelector('.exercise-details')
   left.innerHTML = ''
-  const nameInput = document.createElement('input'); nameInput.value = exObj.name; nameInput.style.fontWeight = '600'
-  nameInput.style.marginRight = '8px'
-  const heaviestW = document.createElement('input'); heaviestW.placeholder='weight'; heaviestW.value = (exObj.overrides?.heaviest?.weight) || (currentPB.heaviest?.weight||''); heaviestW.type='number'; heaviestW.style.width='80px'
-  const heaviestUnit = document.createElement('select'); heaviestUnit.innerHTML = '<option>kg</option><option>lbs</option><option>s</option><option>min</option><option>km</option><option>miles</option>'
-  heaviestUnit.value = (exObj.overrides?.heaviest?.unit) || (currentPB.heaviest?.unit||'kg')
-  const heaviestReps = document.createElement('input'); heaviestReps.placeholder='reps'; heaviestReps.value = (exObj.overrides?.heaviest?.reps) || (currentPB.heaviest?.reps||''); heaviestReps.type='number'; heaviestReps.style.width='64px'
-  const highRepsCount = document.createElement('input'); highRepsCount.placeholder='reps'; highRepsCount.value = (exObj.overrides?.highReps?.reps) || (currentPB.highReps?.reps||''); highRepsCount.type='number'; highRepsCount.style.width='64px'
-  const highRepsUnit = document.createElement('select'); highRepsUnit.innerHTML = '<option>kg</option><option>lbs</option><option>s</option><option>min</option><option>km</option><option>miles</option>'
-  highRepsUnit.value = (exObj.overrides?.highReps?.unit) || (currentPB.highReps?.unit||'kg')
-  const highRepsW = document.createElement('input'); highRepsW.placeholder='weight'; highRepsW.value = (exObj.overrides?.highReps?.weight) || (currentPB.highReps?.weight||''); highRepsW.type='number'; highRepsW.style.width='80px'
-
-  const saveBtn = document.createElement('button'); saveBtn.textContent='Save'
-
+  const nameInput = document.createElement('input'); nameInput.className='exercise-name-input'; nameInput.value = exObj.name; nameInput.setAttribute('aria-label','Exercise name')
   left.appendChild(nameInput)
-  const pbWrap = document.createElement('div'); pbWrap.style.marginTop='6px'
-  pbWrap.appendChild(document.createTextNode('Weight: ')); pbWrap.appendChild(heaviestW); pbWrap.appendChild(heaviestUnit); pbWrap.appendChild(heaviestReps)
-  pbWrap.appendChild(document.createTextNode('  Reps: ')); pbWrap.appendChild(highRepsCount); pbWrap.appendChild(highRepsUnit); pbWrap.appendChild(highRepsW)
-  left.appendChild(pbWrap)
+  const pbEditors = []
+  ;(exObj.setPBs || []).forEach((set, setIndex)=>{
+    if(!set) return
+    const pbRow = document.createElement('div'); pbRow.className='exercise-pb-row'
+    const setLabel = document.createElement('span'); setLabel.className='exercise-pb-set'; setLabel.textContent=`Set ${setIndex + 1}`
+    const valueInput = document.createElement('input'); valueInput.className='exercise-pb-value'; valueInput.type='number'; valueInput.min='0'; valueInput.value=set.weight; valueInput.setAttribute('aria-label',`Set ${setIndex + 1} value`)
+    const unitSelect = document.createElement('select'); unitSelect.className='exercise-pb-unit'; unitSelect.innerHTML='<option>kg</option><option>lbs</option><option>s</option><option>min</option><option>km</option><option>miles</option>'; unitSelect.value=set.unit
+    const times = document.createElement('span'); times.textContent='×'
+    const repsInput = document.createElement('input'); repsInput.className='exercise-pb-reps'; repsInput.type='number'; repsInput.min='0'; repsInput.value=set.reps; repsInput.setAttribute('aria-label',`Set ${setIndex + 1} reps`)
+    pbRow.appendChild(setLabel); pbRow.appendChild(valueInput); pbRow.appendChild(unitSelect); pbRow.appendChild(times); pbRow.appendChild(repsInput)
+    left.appendChild(pbRow)
+    pbEditors.push({set, setIndex, valueInput, unitSelect, repsInput})
+  })
 
-  const actions = document.createElement('div'); actions.style.marginTop='6px'; actions.appendChild(saveBtn)
-  left.appendChild(actions)
-
-  // hide the edit button while editing
-  // show Cancel and Confirm buttons in controls and disable Edit while editing
   const controls = container.querySelector('.controls')
   if(controls){
+    controls.classList.add('editing')
     const cancelBtnControl = controls.querySelector('.secondary')
     const confirmBtnControl = controls.querySelector('.confirm')
-    const editBtnControl = controls.querySelectorAll('button')[2]
+    const controlButtons = controls.querySelectorAll('button')
+    const editBtnControl = controlButtons[2]
+    const deleteBtnControl = controlButtons[3]
     if(cancelBtnControl) cancelBtnControl.classList.remove('hidden')
     if(confirmBtnControl) confirmBtnControl.classList.remove('hidden')
-    if(editBtnControl) editBtnControl.disabled = true
-    // hide the left Save button to avoid duplication
-    saveBtn.classList.add('hidden')
-    // wire confirm to perform the same save
+    if(editBtnControl) editBtnControl.classList.add('hidden')
+    if(deleteBtnControl) deleteBtnControl.classList.add('hidden')
     confirmBtnControl.onclick = ()=> performSave()
   }
 
   function performSave(){
     const newName = nameInput.value.trim()
     if(!newName) return alert('Name required')
+    const pbUpdates = pbEditors.map(editor=>({
+      ...editor,
+      value: parseFloat(editor.valueInput.value) || 0,
+      reps: parseInt(editor.repsInput.value) || 0
+    }))
+    const invalid = pbUpdates.find(editor=>editor.value <= 0 || editor.reps <= 0)
+    if(invalid) return alert(`Enter a value and reps for Set ${invalid.setIndex + 1}`)
+    pbUpdates.forEach(editor=>{
+      exObj.setPBs[editor.setIndex] = {...editor.set, setNumber:editor.setIndex + 1, weight:editor.value, unit:editor.unitSelect.value, reps:editor.reps}
+    })
     exObj.name = newName
-    exObj.overrides = exObj.overrides || {}
-    const hw = parseFloat(heaviestW.value) || 0
-    const hr = parseInt(heaviestReps.value) || 0
-    const hunit = heaviestUnit.value
-    if(hw>0 && hr>0) exObj.overrides.heaviest = {weight:hw, reps:hr, unit:hunit}
-    else delete exObj.overrides.heaviest
-
-    const hrCount = parseInt(highRepsCount.value) || 0
-    const hrW = parseFloat(highRepsW.value) || 0
-    const hrUnit = highRepsUnit.value
-    if(hrCount>0 && hrW>0) exObj.overrides.highReps = {reps:hrCount, weight:hrW, unit:hrUnit}
-    else delete exObj.overrides.highReps
-
     saveData(state.data)
     renderExercises(); renderSessionEditor(); renderCalendar()
   }
-  saveBtn.onclick = performSave
 }
 
 function deleteExercise(idx){
@@ -936,6 +1052,12 @@ function init(){
   if(toggleDietBtn) toggleDietBtn.addEventListener('click', toggleDiet)
   const nutritionRecordBtn = document.getElementById('nutritionRecordBtn')
   if(nutritionRecordBtn) nutritionRecordBtn.addEventListener('click', recordNutrition)
+  const nutritionPresetBtn = document.getElementById('nutritionPresetBtn')
+  if(nutritionPresetBtn) nutritionPresetBtn.addEventListener('click', saveNutritionPreset)
+  const nutritionMenuSelect = document.getElementById('nutritionMenuSelect')
+  if(nutritionMenuSelect) nutritionMenuSelect.addEventListener('change', applyNutritionPreset)
+  const deleteNutritionPresetBtn = document.getElementById('deleteNutritionPresetBtn')
+  if(deleteNutritionPresetBtn) deleteNutritionPresetBtn.addEventListener('click', deleteNutritionPreset)
   // (export/import removed)
   const toggleCalendarBtn = document.getElementById('toggleCalendarBtn')
   if(toggleCalendarBtn) toggleCalendarBtn.addEventListener('click', toggleCalendar)
@@ -958,6 +1080,7 @@ function init(){
   // migrate exercises to object form if needed
   ensureExerciseObjects()
   renderExercises();
+  renderNutritionMenu()
   // populate month/year dropdowns for calendar navigation
   populateMonthYearSelectors()
   updateCalendarVisibility()

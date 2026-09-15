@@ -6,7 +6,7 @@
   <title>Fitness Tracker</title>
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#2b6cff">
-  <link rel="stylesheet" href="styles.css?v=2026-09-13-1">
+  <link rel="stylesheet" href="styles.css?v=2026-09-15-8">
 </head>
 <body>
   <main>
@@ -31,9 +31,24 @@
           <select id="monthSelect" aria-label="Select month"></select>
           <select id="yearSelect" aria-label="Select year"></select>
         </div>
-        <div id="calendarGrid" class="calendar-grid"></div>
-        <div id="daySummary" class="day-summary"></div>
+        <div class="calendar-body">
+          <div id="calendarGrid" class="calendar-grid"></div>
+          <div id="daySummary" class="day-summary"></div>
+        </div>
       </section>
+
+      <!-- Add Exercise panel -->
+      <div id="addExerciseModal" class="modal-overlay hidden">
+        <div class="modal">
+          <div class="row">
+            <input id="modalExerciseName" aria-label="Exercise name" placeholder="Exercise name (e.g. Squat)" />
+          </div>
+          <div class="actions">
+            <button id="modalConfirmAddExerciseBtn">Confirm</button>
+            <button id="modalCancelAddExerciseBtn" class="secondary">Cancel</button>
+          </div>
+        </div>
+      </div>
 
       <section id="sessionEditor" class="hidden">
         <h2>Current Session — <span id="sessionDate"></span></h2>
@@ -43,10 +58,8 @@
             <select id="sessionExerciseSelect"></select>
             <button id="addSetBtn" class="toggle-small">+ Set</button>
             <button id="removeSetBtn" class="toggle-small">- Set</button>
-            <button id="addExerciseToSessionBtn">Finish Exercise</button>
+            <button id="addExerciseToSessionBtn">Finish</button>
           </div>
-
-          <div id="selectedPB" class="pb">Personal best: —</div>
 
           <div id="setsContainer"></div>
 
@@ -61,14 +74,25 @@
         <div id="sessionSummary" class="day-summary hidden"></div>
         <div id="exList" class="exercises-center hidden"></div>
         <div id="dailyNutrition" class="nutrition-center hidden">
-          <h3>Daily Nutrition</h3>
-          <div id="nutritionInputRow" class="nutrition-row">
-            <input id="nutritionName" placeholder="Food name (e.g. Rice)" />
-            <input id="nutritionAmount" type="number" placeholder="Amount" />
-            <select id="nutritionUnit"><option>calories</option><option>kJ</option></select>
-            <input id="nutritionSugar" type="number" placeholder="Sugar (g)" />
-            <input id="nutritionCaffeine" type="number" placeholder="Caffeine (g)" />
-            <button id="nutritionRecordBtn">Record</button>
+          <div class="nutrition-heading-row">
+            <h3>Daily Nutrition</h3>
+            <select id="nutritionMenuSelect" aria-label="Food menu">
+              <option value="">Menu</option>
+            </select>
+            <button id="deleteNutritionPresetBtn" class="secondary" type="button" disabled>Delete</button>
+          </div>
+          <div id="nutritionInputRow" class="nutrition-inputs">
+            <div class="nutrition-row nutrition-row-primary">
+              <input id="nutritionName" placeholder="Food name (e.g. Rice)" />
+              <input id="nutritionAmount" type="number" placeholder="Amount" />
+              <select id="nutritionUnit"><option>calories</option><option>kJ</option></select>
+            </div>
+            <div class="nutrition-row nutrition-row-secondary">
+              <input id="nutritionSugar" type="number" placeholder="Sugar (g)" />
+              <input id="nutritionCaffeine" type="number" placeholder="Caffeine (g)" />
+              <button id="nutritionRecordBtn">Record</button>
+              <button id="nutritionPresetBtn" type="button">Presets</button>
+            </div>
           </div>
           <div id="nutritionList"></div>
         </div>
@@ -81,19 +105,6 @@
       <!-- exList inserted into center; keep this placeholder removed -->
     
   </main>
-  <!-- Add Exercise Modal -->
-  <div id="addExerciseModal" class="modal-overlay hidden">
-    <div class="modal">
-      <div class="row">
-        <label>Exercise name</label>
-        <input id="modalExerciseName" placeholder="Exercise name (e.g. Squat)" />
-      </div>
-      <div class="actions">
-        <button id="modalConfirmAddExerciseBtn">Confirm</button>
-        <button id="modalCancelAddExerciseBtn" class="secondary">Cancel</button>
-      </div>
-    </div>
-  </div>
-  <script src="app.js?v=2026-09-13-1"></script>
+  <script src="app.js?v=2026-09-15-7"></script>
 </body>
 </html>
